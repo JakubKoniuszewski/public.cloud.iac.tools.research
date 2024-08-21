@@ -34,7 +34,7 @@ jobs:
         run: terraform -chdir=terraform/${{ matrix.cloud }} validate
 
   pulumi-lint:
-    name: Lint Pulumi
+    name: Type Check Pulumi
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -42,20 +42,20 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-
+  
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-
+  
       - name: Install Dependencies
         run: npm install
         working-directory: pulumi/${{ matrix.cloud }}
-
-      - name: Lint Pulumi
-        run: npx eslint . --ext .ts
+  
+      - name: Type Check Pulumi
+        run: npx tsc --noEmit
         working-directory: pulumi/${{ matrix.cloud }}
-
+  
       - name: Pulumi Preview
         run: pulumi preview --non-interactive
         working-directory: pulumi/${{ matrix.cloud }}
