@@ -1,0 +1,42 @@
+# Terraform
+terraform.tfstate
+terraform.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+terraform.tfvars
+# Include any other sensitive files like .tfvars
+
+# Pulumi
+Pulumi.*
+node_modules/
+*.js
+*.js.map
+*.log
+*.tsbuildinfo
+
+# Python virtual environments (if used for Pulumi)
+venv/
+.env/
+
+# General
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.bak
+*.tmp
+
+# Ignore build artifacts
+dist/
+build/
+out/
+
+# Ignore lock files
+yarn.lock
+package-lock.json
+
