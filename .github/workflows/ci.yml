@@ -12,6 +12,9 @@ jobs:
   terraform-lint:
     name: Lint Terraform
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cloud: [aws, azure, gcp]  # Run this job for each cloud provider
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -25,14 +28,17 @@ jobs:
         run: terraform fmt -check -recursive ./terraform
 
       - name: Terraform Init
-        run: terraform -chdir=terraform/$(CLOUD) init
+        run: terraform -chdir=terraform/${{ matrix.cloud }} init
 
       - name: Terraform Validate
-        run: terraform -chdir=terraform/$(CLOUD) validate
+        run: terraform -chdir=terraform/${{ matrix.cloud }} validate
 
   pulumi-lint:
     name: Lint Pulumi
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cloud: [aws, azure, gcp]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -44,12 +50,33 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
-        working-directory: pulumi/$(CLOUD)
+        working-directory: pulumi/${{ matrix.cloud }}
 
       - name: Lint Pulumi
         run: npx eslint . --ext .ts
-        working-directory: pulumi/$(CLOUD)
+        working-directory: pulumi/${{ matrix.cloud }}
 
       - name: Pulumi Preview
         run: pulumi preview --non-interactive
-        working-directory: pulumi/$(CLOUD)
+        working-directory: pulumi/${{ matrix.cloud }}
+
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cloud: [aws, azure, gcp]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest
+
+      - name: Terraform Init
+        run: terraform -chdir=terraform/${{ matrix.cloud }} init
+
+      - name: Terraform Plan
+        run: terraform -chdir=terraform/${{ matrix.cloud }} plan
