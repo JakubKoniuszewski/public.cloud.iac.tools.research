@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  terraform-lint:
+    name: Lint Terraform
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cloud: [aws, azure, gcp]  # Run this job for each cloud provider
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive ./terraform
+
+      - name: Terraform Init
+        run: terraform -chdir=terraform/${{ matrix.cloud }} init
+
+      - name: Terraform Validate
+        run: terraform -chdir=terraform/${{ matrix.cloud }} validate
+
+  pulumi-lint:
+    name: Type Check Pulumi
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cloud: [aws, azure, gcp]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+  
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+  
+      - name: Install Dependencies
+        run: npm install
+        working-directory: pulumi/${{ matrix.cloud }}
+  
+      - name: Type Check Pulumi
+        run: npx tsc --noEmit
+        working-directory: pulumi/${{ matrix.cloud }}
+  
+      - name: Pulumi Preview
+        run: pulumi preview --non-interactive
+        working-directory: pulumi/${{ matrix.cloud }}
+
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cloud: [aws, azure, gcp]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest
+
+      - name: Terraform Init
+        run: terraform -chdir=terraform/${{ matrix.cloud }} init
+
+      - name: Terraform Plan
+        run: terraform -chdir=terraform/${{ matrix.cloud }} plan
